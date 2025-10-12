@@ -1,5 +1,7 @@
 import './globals.scss'
 import { ReactNode } from 'react'
+import AuthProvider from './AuthProvider'
+import Navbar from '../components/Navbar'
 
 export const metadata = {
   title: 'Orkut Clone',
@@ -10,7 +12,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <main className="container">{children}</main>
+        <AuthProvider>
+          <Navbar />
+          <main className="container">{children}</main>
+        </AuthProvider>
       </body>
     </html>
   )
