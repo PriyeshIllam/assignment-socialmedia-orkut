@@ -1,7 +1,8 @@
+// src/app/layout.tsx
 import './globals.scss'
 import { ReactNode } from 'react'
 import AuthProvider from './AuthProvider'
-import Navbar from '../components/Navbar'
+import ClientLayout from './ClientLayout'
 
 export const metadata = {
   title: 'Orkut Clone',
@@ -13,8 +14,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body>
         <AuthProvider>
-          <Navbar />
-          <main className="container">{children}</main>
+          <ClientLayout>{children}</ClientLayout>
         </AuthProvider>
       </body>
     </html>
