@@ -1,0 +1,131 @@
+@use '../styles/variables' as *;
+
+.home {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: $orkut-blue;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  color: $orkut-text;
+
+  .content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    gap: 2rem;
+  }
+
+  .left-section {
+    max-width: 400px;
+    text-align: left;
+
+    .logo {
+      font-size: 4rem;
+      font-weight: bold;
+      color: #cc33cc;
+      font-family: "Verdana", sans-serif;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  .login-box {
+    width: 280px;
+    background: white;
+    border: 1px solid $orkut-border;
+    border-radius: 4px;
+    padding: 1.5rem;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+
+    h2 {
+      font-size: 1.1rem;
+      color: $orkut-text;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+
+      input {
+        margin-bottom: 0.75rem;
+        padding: 0.5rem;
+        border: 1px solid $orkut-border;
+        border-radius: 3px;
+      }
+
+      button {
+        background: $orkut-accent;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        padding: 0.5rem;
+        cursor: pointer;
+        font-weight: bold;
+
+        &:hover {
+          background: darken($orkut-accent, 10%);
+        }
+      }
+
+      label {
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        margin-bottom: 0.75rem;
+      }
+    }
+
+    .links {
+      text-align: center;
+      font-size: 0.85rem;
+
+      a {
+        color: $orkut-accent;
+        text-decoration: none;
+        margin: 0 0.25rem;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  footer {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #666;
+    padding: 1rem;
+    border-top: 1px solid $orkut-border;
+
+    a {
+      color: $orkut-accent;
+      margin: 0 0.5rem;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .content {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .left-section {
+      text-align: center;
+    }
+  }
+}
