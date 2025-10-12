@@ -1,0 +1,18 @@
+@use 'sass:color';
+
+:root {
+  --primary: #0070f3;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #fafafa;
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 1rem;
+}
