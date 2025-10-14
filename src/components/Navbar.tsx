@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useAuth } from '@/app/AuthProvider'
+import './navbar.scss'
 
 export default function Navbar() {
   const { user, loading } = useAuth()
@@ -9,26 +10,32 @@ export default function Navbar() {
   if (loading) return null
 
   return (
-    <nav style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      padding: '1rem 0',
-      borderBottom: '1px solid #ddd'
-    }}>
-      <Link href="/">🏠 Home</Link>
-      <div>
-        {user ? (
-          <>
-            <span style={{ marginRight: '1rem' }}>Hi, {user.email}</span>
-            <Link href="/auth/logout">Logout</Link>
-          </>
-        ) : (
-          <>
-            <Link href="/auth/login" style={{ marginRight: '1rem' }}>Login</Link>
-            <Link href="/auth/register">Register</Link>
-          </>
-        )}
+    <div className="orkut-navbar">
+      <div className="orkut-logo">orkut</div>
+
+      <div className="orkut-links">
+        <Link href="/home">Home</Link>
+        <Link href="/profile">Profile</Link>
+        <Link href="/scraps">Scraps</Link>
+        <Link href="/communities">Communities</Link>
+
+        <div className="dropdown">
+          <button className="dropbtn">Applications ▾</button>
+          <div className="dropdown-content">
+            <Link href="#">Games</Link>
+            <Link href="#">Music</Link>
+            <Link href="#">Videos</Link>
+          </div>
+        </div>
+
+        <button className="theme-btn">🎨 Get this theme</button>
       </div>
-    </nav>
+
+      <div className="search-area">
+        <input type="text" placeholder="Search" />
+        <button>search</button>
+        <Link href="/auth/logout">Logout</Link>
+      </div>
+    </div>
   )
 }
