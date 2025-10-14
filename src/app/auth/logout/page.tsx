@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect } from 'react'
-import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 export default function LogoutPage() {
   const router = useRouter()
+  const supabase = createClientComponentClient()
 
   useEffect(() => {
     const logout = async () => {
@@ -13,7 +14,7 @@ export default function LogoutPage() {
       router.push('/')
     }
     logout()
-  }, [router])
+  }, [router, supabase])
 
   return <p>Logging out...</p>
 }
