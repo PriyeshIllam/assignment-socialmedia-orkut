@@ -21,7 +21,9 @@ export default function RegisterPage() {
       setError(error.message)
     } else {
       alert('Registration successful! Please check your email to confirm.')
-      router.push('/auth/login')
+      //router.push('/auth/login')
+      router.push('/auth/create-profile')
+
     }
     setLoading(false)
   }
