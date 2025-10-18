@@ -73,7 +73,10 @@ export default function CreateProfilePage() {
   try {
     console.log('handle-upload')
     setUploading(true)
-
+    if (!user) {
+    // Handle the case when user is null, e.g., throw an error or return
+    throw new Error("User not found");
+  }
     const fileExt = file.name.split('.').pop()
     const fileName = `${user.id}-${Date.now()}.${fileExt}`
     const filePath = `images/${fileName}`
