@@ -22,14 +22,14 @@ export default function CreateProfilePage() {
   const [saving, setSaving] = useState(false)
   const [checkingProfile, setCheckingProfile] = useState(true)
 
-  // Wait for auth to load
+  // Redirect if not logged in
   useEffect(() => {
     if (!loading && !user) {
       router.push('/auth/login')
     }
   }, [user, loading, router])
 
-  // ✅ Check if profile already exists
+  // Check if profile already exists
   useEffect(() => {
     if (!user) return
     const checkProfile = async () => {
@@ -40,13 +40,11 @@ export default function CreateProfilePage() {
         .single()
 
       if (error && error.code !== 'PGRST116') {
-        // Some other real error
         console.error('Error checking profile:', error.message)
         return
       }
 
       if (data) {
-        // Profile already exists → redirect to home
         router.replace('/home')
       } else {
         setCheckingProfile(false)
@@ -55,7 +53,6 @@ export default function CreateProfilePage() {
 
     checkProfile()
   }, [user, router])
-  
 
   if (loading || checkingProfile) return <p>Loading...</p>
 
@@ -65,55 +62,55 @@ export default function CreateProfilePage() {
   }
 
   const handleUpload = async () => {
-  if (!file) {
-    alert('Please select an image first.')
-    return
-  }
+    if (!file) {
+      alert('Please select an image first.')
+      return
+    }
 
-  try {
-    console.log('handle-upload')
-    setUploading(true)
     if (!user) {
-    // Handle the case when user is null, e.g., throw an error or return
-    throw new Error("User not found");
+      alert('User not found. Please login again.')
+      return
+    }
+
+    try {
+      setUploading(true)
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`
+      const filePath = `images/${fileName}`
+
+      // Upload file
+      const { error: uploadError } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from(STORAGE_BUCKET)
+        .getPublicUrl(filePath)
+
+      if (!publicUrlData?.publicUrl) throw new Error('No public URL returned.')
+
+      setPhotoUrl(publicUrlData.publicUrl)
+      console.log('Uploaded image URL:', publicUrlData.publicUrl)
+      alert('Image uploaded successfully!')
+    } catch (error: any) {
+      console.error('Error uploading image:', error.message)
+      alert('Image upload failed: ' + error.message)
+    } finally {
+      setUploading(false)
+    }
   }
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`
-    const filePath = `images/${fileName}`
-
-    // Upload the file
-    const { error: uploadError } = await supabase.storage
-      .from(STORAGE_BUCKET)
-      .upload(filePath, file)
-
-    if (uploadError) throw uploadError
-
-    // ✅ Correct: destructure properly to get the URL
-    const { data: publicUrlData, error: publicUrlError } =
-      supabase.storage.from(STORAGE_BUCKET).getPublicUrl(filePath)
-
-    if (publicUrlError) throw publicUrlError
-    if (!publicUrlData?.publicUrl) throw new Error('No public URL returned.')
-
-    // ✅ Update photo preview
-    setPhotoUrl(publicUrlData.publicUrl)
-    console.log('Uploaded image URL:', publicUrlData.publicUrl)
-
-    alert('Image uploaded successfully!')
-  } catch (error: any) {
-    console.error('Error uploading image:', error.message)
-    alert('Image upload failed: ' + error.message)
-  } finally {
-    setUploading(false)
-  }
-}
-
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSaving(true)
+    if (!user) {
+      alert('User not found. Cannot save profile.')
+      return
+    }
 
-    console.log('photoUrl--', photoUrl)
+    setSaving(true)
 
     const { error } = await supabase.from('profiles').insert({
       id: user.id,
