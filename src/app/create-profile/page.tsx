@@ -8,6 +8,16 @@ import './profile.scss'
 
 const STORAGE_BUCKET = 'files' // or process.env.NEXT_STORAGE_LOC
 
+
+function getStoragePathFromPublicUrl(publicUrl: string): string | null {
+  try {
+    const match = publicUrl.match(/object\/public\/[^/]+\/(.+)$/)
+    return match ? match[1] : null
+  } catch {
+    return null
+  }
+}
+
 export default function CreateProfilePage() {
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -21,6 +31,7 @@ export default function CreateProfilePage() {
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [checkingProfile, setCheckingProfile] = useState(true)
+  const [photoUrl_public, setProfilePhotoUrl] = useState<string>('')
 
   // Redirect if not logged in
   useEffect(() => {
@@ -95,6 +106,23 @@ export default function CreateProfilePage() {
       setPhotoUrl(publicUrlData.publicUrl)
       console.log('Uploaded image URL:', publicUrlData.publicUrl)
       alert('Image uploaded successfully!')
+      if (publicUrlData.publicUrl) {
+              const storagePath = getStoragePathFromPublicUrl(publicUrlData.publicUrl)
+              if (storagePath) {
+                const { data: signedUrlData, error: signedError } = await supabase.storage
+                  .from(STORAGE_BUCKET)
+                  .createSignedUrl(storagePath, 60 * 60 * 24) // 24 hours
+
+                if (signedError) {
+                  console.error('Error creating signed URL:', signedError.message)
+                } else if (signedUrlData?.signedUrl) {
+                  setProfilePhotoUrl(signedUrlData.signedUrl)
+                }
+              } else {
+                console.warn('Invalid photo URL, cannot extract storage path.')
+              }
+            }
+
     } catch (error: any) {
       console.error('Error uploading image:', error.message)
       alert('Image upload failed: ' + error.message)
@@ -154,8 +182,8 @@ export default function CreateProfilePage() {
           >
             {uploading ? 'Uploading...' : 'Upload Image'}
           </button>
-          {photoUrl && (
-            <img src={photoUrl} alt="Preview" className="preview-img" />
+          {photoUrl_public && (
+            <img src={photoUrl_public} alt="Preview" className="preview-img" />
           )}
         </label>
 

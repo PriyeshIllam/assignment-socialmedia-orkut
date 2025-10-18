@@ -76,9 +76,11 @@ export default function HomePage() {
 
       setProfile(profileData)
 
+      console.log('profileData.photo_url', profileData.photo_url)
       // 2️⃣ Generate signed photo URL (if exists)
       if (profileData.photo_url) {
         const storagePath = getStoragePathFromPublicUrl(profileData.photo_url)
+        console.log('storagePath',storagePath)
         if (storagePath) {
           const { data: signedUrlData, error: signedError } = await supabase.storage
             .from(STORAGE_BUCKET)
