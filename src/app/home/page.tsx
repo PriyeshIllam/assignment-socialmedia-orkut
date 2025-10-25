@@ -27,6 +27,15 @@ type Post = {
   profiles?: Profile
 }
 
+type Comment = {
+  id: string
+  post_id: string
+  user_id: string
+  content: string
+  created_at: string
+  profiles?: Profile
+}
+
 function getStoragePathFromPublicUrl(publicUrl: string): string | null {
   try {
     const match = publicUrl.match(/object\/public\/[^/]+\/(.+)$/)
@@ -68,20 +77,24 @@ export default function HomePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [friends, setFriends] = useState<Profile[]>([])
   const [posts, setPosts] = useState<Post[]>([])
+  const [comments, setComments] = useState<Record<string, Comment[]>>({})
   const [fetching, setFetching] = useState(true)
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string>('')
 
-  // Post creation form
+  // Post creation
   const [postTitle, setPostTitle] = useState('')
   const [postText, setPostText] = useState('')
   const [postImage, setPostImage] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
 
-  // Editing
+  // Editing post
   const [editingPostId, setEditingPostId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editText, setEditText] = useState('')
   const [editImage, setEditImage] = useState<File | null>(null)
+
+  // Comment input state
+  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (!loading && !user) router.push('/')
@@ -93,7 +106,6 @@ export default function HomePage() {
     const fetchData = async () => {
       setFetching(true)
 
-      // Load profile
       const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
@@ -104,6 +116,7 @@ export default function HomePage() {
         router.push('/create-profile')
         return
       }
+
       setProfile(profileData)
 
       if (profileData.photo_url) {
@@ -111,7 +124,6 @@ export default function HomePage() {
         if (signed) setProfilePhotoUrl(signed)
       }
 
-      // Load friends
       const { data: friendData } = await supabase
         .from('suggestions')
         .select('suggested_user_id, profiles!suggested_user_id(*)')
@@ -207,7 +219,67 @@ export default function HomePage() {
         })
       )
       setPosts(signedPosts)
+      await loadCommentsForPosts(signedPosts.map((p) => p.id))
     }
+  }
+
+  const loadCommentsForPosts = async (postIds: string[]) => {
+    const { data } = await supabase
+      .from('comments')
+      .select('*, profiles(*)')
+      .in('post_id', postIds)
+      .order('created_at', { ascending: true })
+
+    if (data) {
+      // Apply signed URL for profile photos in comments
+      const signedComments = await Promise.all(
+        data.map(async (c: any) => {
+          const signedPhoto =
+            c.profiles?.photo_url
+              ? await getSignedUrlFromPublicUrl(c.profiles.photo_url)
+              : null
+          return {
+            ...c,
+            profiles: { ...c.profiles, photo_url: signedPhoto },
+          }
+        })
+      )
+
+      const grouped = signedComments.reduce((acc: Record<string, Comment[]>, c: any) => {
+        acc[c.post_id] = acc[c.post_id] || []
+        acc[c.post_id].push(c)
+        return acc
+      }, {})
+      setComments(grouped)
+    }
+  }
+
+  const handleAddComment = async (postId: string) => {
+    const text = commentInputs[postId]?.trim()
+    if (!text) return
+
+    const { error } = await supabase.from('comments').insert({
+      post_id: postId,
+      user_id: user!.id,
+      content: text,
+    })
+
+    if (error) {
+      console.error('Failed to comment:', error.message)
+      return
+    }
+
+    setCommentInputs({ ...commentInputs, [postId]: '' })
+    await loadCommentsForPosts([postId])
+  }
+
+  const handleDeleteComment = async (commentId: string, postId: string) => {
+    const { error } = await supabase.from('comments').delete().eq('id', commentId)
+    if (error) {
+      console.error('Delete failed:', error.message)
+      return
+    }
+    await loadCommentsForPosts([postId])
   }
 
   const startEditing = (post: Post) => {
@@ -246,7 +318,6 @@ export default function HomePage() {
     if (!confirm('Are you sure you want to delete this post?')) return
 
     const { error } = await supabase.from('posts').delete().eq('id', postId)
-
     if (error) {
       console.error('Delete failed:', error.message)
       alert('Failed to delete post!')
@@ -272,7 +343,7 @@ export default function HomePage() {
       </div>
 
       <div className="main">
-        {/* Create Post */}
+        {/* Post creation */}
         <div className="post-box">
           <h3>What’s new, {profile.display_name.split(' ')[0]}?</h3>
           <form onSubmit={handleCreatePost}>
@@ -351,6 +422,48 @@ export default function HomePage() {
                   )}
                 </>
               )}
+
+              {/* COMMENTS */}
+              <div className="comments-section">
+                <h5>Comments</h5>
+                {comments[p.id]?.length ? (
+                  comments[p.id].map((c) => (
+                    <div key={c.id} className="comment">
+                      <img
+                        src={c.profiles?.photo_url || 'https://placekitten.com/40/40'}
+                        alt="comment-user"
+                      />
+                      <div className="comment-body">
+                        <strong>{c.profiles?.display_name}</strong>
+                        <p>{c.content}</p>
+                        <small>{new Date(c.created_at).toLocaleString()}</small>
+                      </div>
+                      {(c.user_id === user!.id || p.user_id === user!.id) && (
+                        <button
+                          className="delete-comment"
+                          onClick={() => handleDeleteComment(c.id, p.id)}
+                        >
+                          🗑️
+                        </button>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="no-comments">No comments yet.</p>
+                )}
+
+                <div className="add-comment">
+                  <input
+                    type="text"
+                    value={commentInputs[p.id] || ''}
+                    onChange={(e) =>
+                      setCommentInputs({ ...commentInputs, [p.id]: e.target.value })
+                    }
+                    placeholder="Add a comment..."
+                  />
+                  <button onClick={() => handleAddComment(p.id)}>💬</button>
+                </div>
+              </div>
             </div>
           ))}
         </div>
