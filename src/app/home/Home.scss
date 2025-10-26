@@ -64,13 +64,53 @@
     }
   }
 
-  /* Main */
+  /* Main Content */
   .main {
     display: flex;
     flex-direction: column;
     gap: 20px;
     overflow: hidden;
 
+    /* ✅ Search Bar */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      gap: 10px;
+      width: 100%;
+
+      input {
+        flex: 1;
+        border: none;
+        outline: none;
+        font-size: 1rem;
+        background: transparent;
+        color: #333;
+
+        &::placeholder {
+          color: #aaa;
+        }
+      }
+
+      button {
+        background: #0070f3;
+        border: none;
+        color: #fff;
+        padding: 6px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+
+        &:hover {
+          background: #0056c9;
+        }
+      }
+    }
+
+    /* Post Box */
     .post-box {
       background: #fff;
       border-radius: 16px;
@@ -131,6 +171,7 @@
       }
     }
 
+    /* Feed */
     .feed {
       display: flex;
       flex-direction: column;
@@ -272,7 +313,6 @@
           margin-top: 20px;
           border-top: 1px solid #eee;
           padding-top: 15px;
-          overflow: hidden;
 
           .comment {
             background: #fafafa;
