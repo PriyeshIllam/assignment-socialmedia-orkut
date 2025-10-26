@@ -81,6 +81,8 @@ export default function HomePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [friends, setFriends] = useState<Profile[]>([])
   const [posts, setPosts] = useState<Post[]>([])
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]) // 🔍 filtered list
+  const [searchTerm, setSearchTerm] = useState('') // 🔍 search input
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({})
   const [fetching, setFetching] = useState(true)
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string>('')
@@ -197,7 +199,7 @@ export default function HomePage() {
     await refreshPosts()
   }
 
-  // 🔁 Load Posts and Comments
+  // 🔁 Load Posts
   const refreshPosts = async () => {
     const { data: postsData } = await supabase
       .from('posts')
@@ -217,10 +219,22 @@ export default function HomePage() {
     )
 
     setPosts(signedPosts)
-
-    // Load all comments for all posts on initial load
+    setFilteredPosts(signedPosts) // 🔍 set default filtered list
     await Promise.all(signedPosts.map((p) => fetchComments(p.id)))
   }
+
+  // 🔍 Search filter logic
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredPosts(posts)
+    } else {
+      const filtered = posts.filter((p) =>
+  (p.title || '').toLowerCase().includes(searchTerm.toLowerCase())
+)
+
+      setFilteredPosts(filtered)
+    }
+  }, [searchTerm, posts])
 
   // ✏️ Edit Post
   const startEditing = (post: Post) => {
@@ -259,7 +273,7 @@ export default function HomePage() {
     await refreshPosts()
   }
 
-  // 💬 Comments
+  // 💬 Comments (unchanged)
   const fetchComments = async (postId: string) => {
     const { data, error } = await supabase
       .from('comments')
@@ -281,7 +295,6 @@ export default function HomePage() {
       }))
     )
 
-    // Build nested comment tree
     const byParent: Record<string, Comment[]> = {}
     signedComments.forEach((c) => {
       const pid = c.parent_comment_id || 'root'
@@ -366,7 +379,7 @@ export default function HomePage() {
             </div>
           )}
 
-          {c.replies?.length > 0 && renderComments(c.replies, postId, level + 1)}
+          {Array.isArray(c.replies) && c.replies.length > 0 && renderComments(c.replies, postId, level + 1)}
         </div>
       ))}
     </div>
@@ -408,11 +421,21 @@ export default function HomePage() {
           </form>
         </div>
 
+        {/* 🔍 Search Bar */}
+        <div className="search-bar">
+          <input
+            type="text"
+            placeholder="Search posts by title..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
         {/* Feed */}
         <div className="feed">
           <h3>Recent Updates</h3>
-          {posts.length === 0 && <p>No posts yet. Be the first!</p>}
-          {posts.map((p) => (
+          {filteredPosts.length === 0 && <p>No posts found.</p>}
+          {filteredPosts.map((p) => (
             <div key={p.id} className="post-card">
               <div className="post-header">
                 <img src={p.profiles?.photo_url || 'https://placekitten.com/60/60'} alt="user" />
@@ -459,7 +482,7 @@ export default function HomePage() {
                 </>
               )}
 
-              {/* Always show comments */}
+              {/* Comments */}
               <div className="comments-section">
                 {commentsByPost[p.id] && renderComments(commentsByPost[p.id], p.id)}
                 <div className="new-comment">
