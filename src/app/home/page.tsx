@@ -35,7 +35,7 @@ type Comment = {
   content: string
   created_at: string
   profiles?: Profile
-  replies?: Comment[]
+  replies: Comment[]
 }
 
 // 🧠 Helpers
