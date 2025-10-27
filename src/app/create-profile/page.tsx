@@ -6,8 +6,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import './profile.scss'
 
-const STORAGE_BUCKET = 'files' // or process.env.NEXT_STORAGE_LOC
-
+const STORAGE_BUCKET = 'files'
 
 function getStoragePathFromPublicUrl(publicUrl: string): string | null {
   try {
@@ -89,14 +88,12 @@ export default function CreateProfilePage() {
       const fileName = `${user.id}-${Date.now()}.${fileExt}`
       const filePath = `images/${fileName}`
 
-      // Upload file
       const { error: uploadError } = await supabase.storage
         .from(STORAGE_BUCKET)
         .upload(filePath, file)
 
       if (uploadError) throw uploadError
 
-      // Get public URL
       const { data: publicUrlData } = supabase.storage
         .from(STORAGE_BUCKET)
         .getPublicUrl(filePath)
@@ -104,25 +101,20 @@ export default function CreateProfilePage() {
       if (!publicUrlData?.publicUrl) throw new Error('No public URL returned.')
 
       setPhotoUrl(publicUrlData.publicUrl)
-      console.log('Uploaded image URL:', publicUrlData.publicUrl)
       alert('Image uploaded successfully!')
-      if (publicUrlData.publicUrl) {
-              const storagePath = getStoragePathFromPublicUrl(publicUrlData.publicUrl)
-              if (storagePath) {
-                const { data: signedUrlData, error: signedError } = await supabase.storage
-                  .from(STORAGE_BUCKET)
-                  .createSignedUrl(storagePath, 60 * 60 * 24) // 24 hours
 
-                if (signedError) {
-                  console.error('Error creating signed URL:', signedError.message)
-                } else if (signedUrlData?.signedUrl) {
-                  setProfilePhotoUrl(signedUrlData.signedUrl)
-                }
-              } else {
-                console.warn('Invalid photo URL, cannot extract storage path.')
-              }
-            }
+      const storagePath = getStoragePathFromPublicUrl(publicUrlData.publicUrl)
+      if (storagePath) {
+        const { data: signedUrlData, error: signedError } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .createSignedUrl(storagePath, 60 * 60 * 24) // 24 hours
 
+        if (signedError) {
+          console.error('Error creating signed URL:', signedError.message)
+        } else if (signedUrlData?.signedUrl) {
+          setProfilePhotoUrl(signedUrlData.signedUrl)
+        }
+      }
     } catch (error: any) {
       console.error('Error uploading image:', error.message)
       alert('Image upload failed: ' + error.message)
@@ -138,12 +130,17 @@ export default function CreateProfilePage() {
       return
     }
 
+    if (!photoUrl) {
+      alert('Please upload a profile image before submitting.')
+      return
+    }
+
     setSaving(true)
 
     const { error } = await supabase.from('profiles').insert({
       id: user.id,
       display_name: displayName,
-      photo_url: photoUrl || 'https://placekitten.com/200/200',
+      photo_url: photoUrl,
       status_message: status,
       location,
       bio,
@@ -182,6 +179,7 @@ export default function CreateProfilePage() {
           >
             {uploading ? 'Uploading...' : 'Upload Image'}
           </button>
+
           {photoUrl_public && (
             <img src={photoUrl_public} alt="Preview" className="preview-img" />
           )}
@@ -217,7 +215,10 @@ export default function CreateProfilePage() {
           />
         </label>
 
-        <button type="submit" disabled={saving}>
+        <button
+          type="submit"
+          disabled={saving || !photoUrl} // ✅ disable if no image uploaded
+        >
           {saving ? 'Saving...' : 'Create Profile'}
         </button>
       </form>

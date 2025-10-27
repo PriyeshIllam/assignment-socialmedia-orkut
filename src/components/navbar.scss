@@ -14,118 +14,22 @@
     font-size: 24px;
     font-weight: bold;
     color: #ff4db2;
-    margin-right: 20px;
+    text-decoration: none !important; /* remove underline */
     white-space: nowrap;
-  }
 
-  /* ===============================
-     Middle links section
-  ================================ */
-  .orkut-links {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px;
-
-    a,
-    .dropbtn,
-    .theme-btn {
-      background: #617b9a;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      padding: 5px 10px;
-      font-size: 13px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background 0.2s ease;
-
-      &:hover {
-        background: #506883;
-      }
-    }
-
-    .dropdown {
-      position: relative;
-      display: inline-block;
-
-      .dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: #617b9a;
-        min-width: 130px;
-        z-index: 2;
-        border-radius: 4px;
-        top: 30px;
-
-        a {
-          color: white;
-          padding: 6px 10px;
-          display: block;
-          text-decoration: none;
-
-          &:hover {
-            background-color: #506883;
-          }
-        }
-      }
-
-      &:hover .dropdown-content {
-        display: block;
-      }
-    }
-
-    .theme-btn {
-      background: linear-gradient(to bottom, #e2e6ea, #c9d1da);
-      color: #333;
-      font-weight: 500;
-
-      &:hover {
-        background: linear-gradient(to bottom, #d3d8dd, #b9c2cb);
-      }
+    &:hover {
+      text-decoration: none; /* prevent hover underline */
     }
   }
 
-  /* ===============================
-     Right area (Search + Logout)
-  ================================ */
   .search-area {
     display: flex;
     align-items: center;
     gap: 6px;
-    flex-wrap: wrap;
-
-    input {
-      padding: 4px 8px;
-      border: 1px solid #aaa;
-      border-radius: 2px;
-      font-size: 13px;
-      width: 160px;
-
-      &:focus {
-        outline: none;
-        border-color: #617b9a;
-      }
-    }
-
-    button {
-      background: #617b9a;
-      color: white;
-      border: none;
-      border-radius: 3px;
-      padding: 4px 8px;
-      cursor: pointer;
-      font-size: 12px;
-
-      &:hover {
-        background: #506883;
-      }
-    }
 
     a {
       background: #ff4db2;
       color: #fff;
-      border: none;
       border-radius: 4px;
       padding: 5px 10px;
       font-size: 13px;
@@ -138,40 +42,19 @@
     }
   }
 
-  /* ===============================
-     Responsive Design
-  ================================ */
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
     text-align: center;
     padding: 12px;
 
-    .orkut-links {
-      justify-content: center;
-    }
-
     .search-area {
       justify-content: center;
       width: 100%;
-
-      input {
-        width: 60%;
-      }
     }
   }
 
   @media (max-width: 480px) {
-    .orkut-links {
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .search-area input {
-      width: 100%;
-    }
-
-    .search-area button,
     .search-area a {
       width: 100%;
     }

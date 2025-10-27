@@ -11,12 +11,10 @@ export default function Navbar() {
 
   return (
     <div className="orkut-navbar">
-      <div className="orkut-logo">orkut</div>
+     <Link href="/home" className="orkut-logo">
+      orkut
+    </Link>
 
-      <div className="orkut-links">
-        <Link href="/home">Home</Link>
-        <Link href="/profile">Profile</Link>
-      </div>
 
       <div className="search-area">
         <Link href="/auth/logout">Logout</Link>
