@@ -22,7 +22,7 @@ export default function RegisterPage() {
     } else {
       alert('Registration successful! Please check your email to confirm.')
       //router.push('/auth/login')
-      router.push('/auth/create-profile')
+      router.push('/')
 
     }
     setLoading(false)
